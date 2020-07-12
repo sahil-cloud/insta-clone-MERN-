@@ -6,6 +6,18 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {JWT_SECRET} = require("../config/keys")
 const requestlogin = require("../middleware/requestlogin");
+const nodemailer = require("nodemailer");
+const sendgridTransport = require("nodemailer-sendgrid-transport");
+//
+
+const transporter = nodemailer.createTransport(
+  sendgridTransport({
+    auth: {
+      api_key:
+        "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",
+    },
+  })
+);
 
 router.get('/protected',requestlogin,(req,res)=>{
     res.send("hello form protected");
@@ -39,6 +51,16 @@ User.findOne({email:email})
         });
         user.save()
           .then((user) => {
+               transporter.sendMail({
+                    to:user.email,
+                    from:"instantposts@noreply.com",
+                    subject:"Welcome To Instantposts",
+                    html:`
+                        Hello, ${user.name} <br>
+                        Welocme to InstantPosts <br>
+                        We are happy to have you as our user 
+                    `
+                })
             res.json({ message: "saved success" });
           })
           .catch((err) => {
